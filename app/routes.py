@@ -29,30 +29,32 @@ def submit_answer(data: AnswerSubmission):
 # STUDENT PROGRESS ENDPOINT
 
 @router.get("/student-progress/{student_id}")
-def student_progress(student_id: int):
+def get_student_progress(student_id: int):
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
     query = """
-    SELECT
-        COUNT(*),
-        AVG(score)
+    SELECT 
+        COUNT(*) AS total_quizzes,
+        AVG(score) AS average_score,
+        MAX(created_at) AS last_activity
     FROM quiz_results
     WHERE student_id = %s
     """
 
-    cursor.execute(query, (student_id,))
-    result = cursor.fetchone()
+    cur.execute(query, (student_id,))
+    result = cur.fetchone()
 
-    cursor.close()
+    cur.close()
     conn.close()
 
     return {
-        "total_attempts": result[0],
-        "average_score": result[1]
+        "student_id": student_id,
+        "total_quizzes": result[0],
+        "average_score": float(result[1]) if result[1] else 0,
+        "last_activity": result[2]
     }
-
 
 
 # TEACHER ANALYTICS ENDPOINT
@@ -61,18 +63,37 @@ def student_progress(student_id: int):
 def teacher_report():
 
     conn = get_connection()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    query = """
-    SELECT AVG(score) FROM quiz_results
-    """
+    # Average score
+    cur.execute("SELECT AVG(score) FROM quiz_results")
+    avg_score = cur.fetchone()[0]
 
-    cursor.execute(query)
-    avg_score = cursor.fetchone()[0]
+    # Students scoring below 50
+    cur.execute("""
+        SELECT COUNT(DISTINCT student_id)
+        FROM quiz_results
+        WHERE score < 50
+    """)
+    struggling_students = cur.fetchone()[0]
 
-    cursor.close()
+    # Most difficult topic
+    cur.execute("""
+        SELECT t.topic_name, AVG(q.score) AS avg_score
+        FROM quiz_results q
+        JOIN topics t ON q.topic_id = t.topic_id
+        GROUP BY t.topic_name
+        ORDER BY avg_score ASC
+        LIMIT 1
+    """)
+
+    difficult_topic = cur.fetchone()
+
+    cur.close()
     conn.close()
 
     return {
-        "average_class_score": avg_score
+        "average_score": float(avg_score) if avg_score else 0,
+        "students_below_50": struggling_students,
+        "most_difficult_topic": difficult_topic[0] if difficult_topic else None
     }
