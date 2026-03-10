@@ -96,21 +96,6 @@ The system stores student interaction data including:
 -   Time spent on questions
 -   Topic performance
 
-PostgreSQL table example:
-
-    CREATE TABLE quiz_results (
-        result_id SERIAL PRIMARY KEY,
-        student_id INT,
-        topic_id INT,
-        question TEXT,
-        student_answer TEXT,
-        correct_answer TEXT,
-        is_correct BOOLEAN,
-        score INT,
-        time_spent_seconds INT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
 ------------------------------------------------------------------------
 
 # 5. SQL Analytics Engine
@@ -252,6 +237,7 @@ Teacher views analytics
     GET /analytics/student-performance
 
 Dashboard visualizes results.
+
 
 
 
