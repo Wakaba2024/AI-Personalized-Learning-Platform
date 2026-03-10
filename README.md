@@ -80,13 +80,6 @@ Example response:
 
 The platform adjusts quiz difficulty based on student performance.
 
-Logic:
-
-| Performance \| Difficulty \|
-
-\|-------------\|-----------\| High Score \| Hard Questions \| \| Medium
-Score \| Normal Questions \| \| Low Score \| Simplified Questions \|
-
 Endpoint:
 
     GET /adaptive-quiz/{student_id}/{topic}
@@ -259,6 +252,7 @@ Teacher views analytics
     GET /analytics/student-performance
 
 Dashboard visualizes results.
+
 
 
 
